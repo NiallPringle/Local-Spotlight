@@ -100,15 +100,18 @@ const Navbar = () => {
 
         {/* Mobile Menu Toggle */}
         <div className="flex items-center gap-4 md:hidden">
-          <a 
-            href="https://wa.me/353834120889"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 active:scale-95 transition-all shadow-md"
-          >
-            <MessageCircle size={16} />
-            WhatsApp Us
-          </a>
+          <div className="flex flex-col items-end">
+            <span className={`text-[10px] font-bold uppercase tracking-tight leading-none mb-1 transition-colors ${isScrolled ? 'text-accent' : 'text-white'}`}>Limited Availability!</span>
+            <a 
+              href="https://wa.me/353834120889"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 active:scale-95 transition-all shadow-md"
+            >
+              <MessageCircle size={16} />
+              WhatsApp Us
+            </a>
+          </div>
 
           <button 
             className={`transition-colors ${isScrolled ? 'text-heading' : 'text-white'}`}
@@ -199,6 +202,32 @@ const FadeIn = ({ children, delay = 0 }: { children: React.ReactNode, delay?: nu
 
 export default function App() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ name: '', business: '', message: '' });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.business || !formData.message) return;
+
+    setStatus('loading');
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', business: '', message: '' });
+      } else {
+        setStatus('error');
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus('error');
+    }
+  };
 
   return (
     <div className="bg-cream min-h-screen text-heading font-sans selection:bg-accent/10 selection:text-accent">
@@ -225,14 +254,14 @@ export default function App() {
               Reach 8,500 <br /><span className="italic">Local Homes</span> <br />in Mullingar
             </h1>
             <p className="text-xl md:text-2xl text-white/90 mb-12 font-medium leading-relaxed max-w-2xl">
-              Simple, affordable advertising delivered straight to local homes.
+              Simple affordable, shared direct mail advertising for local businesses.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-start">
               <a 
                 href="#contact" 
                 className="bg-accent text-white px-10 py-5 rounded-full font-bold shadow-lg hover:opacity-90 hover:-translate-y-1 transition-all text-center flex items-center justify-center gap-2 text-lg"
               >
-                Reserve your spot <ArrowRight size={20} />
+                Secure your spot <ArrowRight size={20} />
               </a>
               <a 
                 href="#how-it-works" 
@@ -250,7 +279,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row">
           <div className="flex-1 p-8 text-center border-b md:border-b-0 md:border-r border-soft">
             <div className="text-4xl font-serif font-bold text-accent mb-1">8,500</div>
-            <div className="text-xs uppercase tracking-widest font-bold opacity-60">reached monthly</div>
+            <div className="text-xs uppercase tracking-widest font-bold opacity-60">homes reached monthly</div>
           </div>
           <div className="flex-1 p-8 text-center border-b md:border-b-0 md:border-r border-soft">
             <div className="text-2xl lg:text-3xl font-serif font-bold text-accent mb-1">Exclusivity Guaranteed</div>
@@ -271,7 +300,8 @@ export default function App() {
       <section id="what-we-do" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-[1.2fr_0.8fr] gap-12 md:gap-20 items-center">
-            <div className="order-2 md:order-1">
+            {/* Desktop Mockup - Hidden on mobile */}
+            <div className="hidden md:block order-1">
               <FadeIn>
                 <div 
                   className="relative rounded-2xl overflow-hidden shadow-2xl group border border-soft cursor-zoom-in"
@@ -291,7 +321,7 @@ export default function App() {
               </FadeIn>
             </div>
             
-            <div className="order-1 md:order-2">
+            <div className="md:order-2 space-y-8">
               <FadeIn>
                 <div className="mb-4 inline-block px-3 py-1 bg-accent/10 rounded-full">
                   <span className="text-accent font-bold text-xs uppercase tracking-widest">Big impact, small budget.</span>
@@ -300,6 +330,25 @@ export default function App() {
                   The Power of <br />
                   <span className="italic text-accent">Shared Mail</span>
                 </h2>
+
+                {/* Mobile Mockup - Only shows on mobile directly under heading */}
+                <div className="md:hidden mb-10">
+                  <div 
+                    className="relative rounded-2xl overflow-hidden shadow-xl group border border-soft cursor-zoom-in"
+                    onClick={() => setSelectedImage(mockup)}
+                  >
+                    <img 
+                      src={mockup} 
+                      alt="Shared Direct Mail service showcase" 
+                      className="w-full h-auto"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-white/90 backdrop-blur-sm text-heading px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                        Tap to expand
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <p className="text-lg text-heading/70 mb-8 leading-relaxed">
                   Local Spotlight is a shared direct mail advertising service. Your business is featured on a professionally designed card and delivered to thousands of homes in your local area for a fraction of the cost if you were to do it alone.
                 </p>
@@ -410,7 +459,7 @@ export default function App() {
                   <MapPin className="text-accent" size={32} />
                 </div>
                 <p className="text-xl md:text-2xl text-heading/70 leading-relaxed font-medium">
-                  From Multyfarnham to Rochfortbridge and everywhere in between.
+                  8500 verified and guaranteed addresses in Mullingar and the surrounding areas.
                 </p>
               </FadeIn>
             </div>
@@ -458,7 +507,7 @@ export default function App() {
                     </ul>
 
                     <p className="text-3xl md:text-4xl font-serif font-bold italic text-accent leading-tight">
-                      Starting at €215. <br className="sm:hidden" />
+                      Starting at €190. <br className="sm:hidden" />
                       <span className="text-2xl md:text-3xl">just 2c per home!</span>
                     </p>
                   </div>
@@ -553,7 +602,7 @@ export default function App() {
               />
               <FAQItem 
                 question="How much does it cost?" 
-                answer="We have 3 ad sizes available to suit all business size and budgets. Starting at €215. Limited availability. Message us on WhatsApp for current availability and prices." 
+                answer="We have 3 ad sizes available to suit all business size and budgets. Starting at €190. Limited availability. Message us on WhatsApp for current availability and prices." 
               />
               <FAQItem 
                 question="What areas do you cover?" 
@@ -594,7 +643,7 @@ export default function App() {
           <div className="grid lg:grid-cols-2 gap-20">
             <div className="flex flex-col justify-center">
               <FadeIn>
-                <h2 className="text-5xl md:text-6xl font-serif font-bold mb-6 leading-tight select-none">Want your business <br /><span className="italic text-accent">featured?</span></h2>
+                <h2 className="text-5xl md:text-6xl font-serif font-bold mb-6 leading-tight select-none">Secure your spot. <br /><span className="italic text-accent">Limited availability</span></h2>
                 
                 <div className="mb-10">
                   <p className="text-xl text-white/80 mb-6">Message or call us on WhatsApp</p>
@@ -634,10 +683,20 @@ export default function App() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                      <a href="#" className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center hover:bg-accent transition-all hover:-translate-y-1 group">
+                      <a 
+                        href="https://www.facebook.com/profile.php?id=61590020284741" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center hover:bg-accent transition-all hover:-translate-y-1 group"
+                      >
                         <Facebook size={22} className="text-white/40 group-hover:text-white transition-colors" />
                       </a>
-                      <a href="#" className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center hover:bg-accent transition-all hover:-translate-y-1 group">
+                      <a 
+                        href="https://www.instagram.com/local.spotlight.ie?igsh=bGF3Mng0Ym12eTVh" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center hover:bg-accent transition-all hover:-translate-y-1 group"
+                      >
                         <Instagram size={22} className="text-white/40 group-hover:text-white transition-colors" />
                       </a>
                     </div>
@@ -649,26 +708,74 @@ export default function App() {
             <div className="bg-white rounded-2xl p-8 md:p-12 text-heading shadow-card relative border border-soft">
               <FadeIn>
                 <h3 className="text-3xl font-serif font-bold mb-8">Book My Spot</h3>
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Full Name</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-lg bg-cream/50 border border-soft focus:ring-1 focus:ring-accent outline-none transition-all" placeholder="John Doe" />
+                {status === 'success' ? (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-10"
+                  >
+                    <div className="bg-green-100 text-green-700 p-4 rounded-xl mb-6 flex flex-col items-center gap-3">
+                      <CheckCircle2 size={48} />
+                      <p className="font-bold text-xl">Inquiry Sent!</p>
+                      <p className="text-sm">We'll get back to you within 24 hours.</p>
+                    </div>
+                    <button 
+                      onClick={() => setStatus('idle')}
+                      className="text-accent font-bold hover:underline"
+                    >
+                      Send another message
+                    </button>
+                  </motion.div>
+                ) : (
+                  <form className="space-y-6" onSubmit={handleSubmit}>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Full Name</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="w-full px-4 py-3 rounded-lg bg-cream/50 border border-soft focus:ring-1 focus:ring-accent outline-none transition-all" 
+                          placeholder="John Doe" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Business Name</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={formData.business}
+                          onChange={(e) => setFormData({ ...formData, business: e.target.value })}
+                          className="w-full px-4 py-3 rounded-lg bg-cream/50 border border-soft focus:ring-1 focus:ring-accent outline-none transition-all" 
+                          placeholder="Joe's Plastering" 
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Business Name</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-lg bg-cream/50 border border-soft focus:ring-1 focus:ring-accent outline-none transition-all" placeholder="Joe's Plastering" />
+                      <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Message</label>
+                      <textarea 
+                        rows={4} 
+                        required
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        className="w-full px-4 py-3 rounded-lg bg-cream/50 border border-soft focus:ring-1 focus:ring-accent outline-none transition-all" 
+                        placeholder="Tell us about your business..." 
+                      />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Message</label>
-                    <textarea rows={4} className="w-full px-4 py-3 rounded-lg bg-cream/50 border border-soft focus:ring-1 focus:ring-accent outline-none transition-all" placeholder="Tell us about your business..." />
-                  </div>
-                  
-                  <button className="w-full bg-accent text-white py-4 rounded-full font-bold text-lg shadow-lg hover:opacity-90 transition-all">
-                    Get Featured Now
-                  </button>
-                </form>
+                    
+                    {status === 'error' && (
+                      <p className="text-red-500 text-sm font-medium">Failed to send message. Please try again or use WhatsApp.</p>
+                    )}
+
+                    <button 
+                      disabled={status === 'loading'}
+                      className="w-full bg-accent text-white py-4 rounded-full font-bold text-lg shadow-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {status === 'loading' ? 'Sending...' : 'Get Featured Now'}
+                    </button>
+                  </form>
+                )}
               </FadeIn>
             </div>
           </div>
@@ -676,17 +783,58 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-heading py-8 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center">
-            <img src={logo} alt="Local Spotlight Logo" className="h-6 md:h-8 w-auto brightness-0 invert" />
+      <footer className="bg-heading py-16 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-3 gap-12 mb-12">
+            <div className="space-y-6">
+              <img src={logo} alt="Local Spotlight Logo" className="h-10 md:h-12 w-auto brightness-0 invert" />
+              <p className="text-white/50 text-sm leading-relaxed max-w-xs">
+                Connecting local businesses to local families through premium shared direct mail advertising.
+              </p>
+            </div>
+            
+            <div className="space-y-6">
+              <h4 className="text-white font-bold uppercase tracking-widest text-xs">Quick Links</h4>
+              <nav className="flex flex-col gap-3">
+                {[
+                  { name: 'Home', href: '#home' },
+                  { name: 'What We Do', href: '#what-we-do' },
+                  { name: 'How It Works', href: '#how-it-works' },
+                  { name: 'Targeting Map', href: '#targeting' },
+                  { name: 'Why Choose Us', href: '#why-choose-us' },
+                  { name: 'FAQ', href: '#faq' },
+                  { name: 'Contact', href: '#contact' },
+                ].map((link) => (
+                  <a 
+                    key={link.name} 
+                    href={link.href} 
+                    className="text-white/40 hover:text-accent transition-colors text-sm font-medium w-fit"
+                  >
+                    {link.name}
+                  </a>
+                ))}
+              </nav>
+            </div>
+
+            <div className="space-y-6">
+              <h4 className="text-white font-bold uppercase tracking-widest text-xs">Contact Us</h4>
+              <div className="space-y-3">
+                <p className="text-white/40 text-sm">info@localspotlight.ie</p>
+                <p className="text-white/40 text-sm">0834120889</p>
+                <p className="text-white/40 text-sm">Mullingar, Co. Westmeath</p>
+              </div>
+            </div>
           </div>
-          <p className="text-white/30 text-[10px] uppercase tracking-widest font-bold">
-            Delivered by An Post • Issue 04 • Mullingar
-          </p>
-          <div className="flex gap-6 text-[10px] font-bold uppercase tracking-widest text-white/30">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
+
+          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-white/30 text-[10px] uppercase tracking-widest font-bold">
+              Delivered by An Post • Mullingar
+            </p>
+            <div className="flex gap-6 text-[10px] font-bold uppercase tracking-widest text-white/30">
+              <a href="#" className="hover:text-white transition-colors">Privacy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms</a>
+              <p>© {new Date().getFullYear()} Local Spotlight</p>
+            </div>
           </div>
         </div>
       </footer>

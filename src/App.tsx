@@ -202,12 +202,12 @@ const FadeIn = ({ children, delay = 0 }: { children: React.ReactNode, delay?: nu
 
 export default function App() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: '', business: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', business: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.business || !formData.message) return;
+    if (!formData.name || !formData.email || !formData.business || !formData.message) return;
 
     setStatus('loading');
     try {
@@ -741,6 +741,17 @@ export default function App() {
                         />
                       </div>
                       <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Email Address</label>
+                        <input 
+                          type="email" 
+                          required
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="w-full px-4 py-3 rounded-lg bg-cream/50 border border-soft focus:ring-1 focus:ring-accent outline-none transition-all" 
+                          placeholder="john@example.com" 
+                        />
+                      </div>
+                      <div className="space-y-2">
                         <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Business Name</label>
                         <input 
                           type="text" 
@@ -772,7 +783,7 @@ export default function App() {
                       disabled={status === 'loading'}
                       className="w-full bg-accent text-white py-4 rounded-full font-bold text-lg shadow-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {status === 'loading' ? 'Sending...' : 'Get Featured Now'}
+                      {status === 'loading' ? 'Sending...' : 'Send'}
                     </button>
                   </form>
                 )}

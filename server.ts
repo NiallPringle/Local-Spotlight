@@ -14,9 +14,9 @@ async function startServer() {
 
   // API Route for Contact Form
   app.post("/api/contact", async (req, res) => {
-    const { name, business, message } = req.body;
+    const { name, email, business, message } = req.body;
 
-    if (!name || !business || !message) {
+    if (!name || !email || !business || !message) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -24,7 +24,17 @@ async function startServer() {
     const gmailPass = process.env.GMAIL_PASS;
 
     if (!gmailUser || !gmailPass) {
-      console.error("GMAIL_USER or GMAIL_PASS environment variables are not set.");
+      console.warn("DEBUG: GMAIL_USER or GMAIL_PASS environment variables are not set. Form submission logged but not emailed.");
+      console.log("Form Data:", { name, email, business, message });
+      
+      // In development, we return 200 to allow testing the UI
+      if (process.env.NODE_ENV !== "production") {
+        return res.status(200).json({ 
+          success: true, 
+          message: "Form submission simulated successfully (Set GMAIL_USER/PASS for real emails)" 
+        });
+      }
+      
       return res.status(500).json({ error: "Email configuration missing on server." });
     }
 
@@ -41,8 +51,8 @@ async function startServer() {
         from: `"${name}" <${gmailUser}>`,
         to: "info@localspotlight.ie",
         subject: `New Inquiry: ${business}`,
-        text: `Name: ${name}\nBusiness: ${business}\n\nMessage:\n${message}`,
-        replyTo: gmailUser, // Usually you'd want the user's email here if you collect it
+        text: `Name: ${name}\nEmail: ${email}\nBusiness: ${business}\n\nMessage:\n${message}`,
+        replyTo: email,
       };
 
       await transporter.sendMail(mailOptions);
